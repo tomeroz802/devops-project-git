@@ -1,0 +1,30 @@
+//project_joseph_agam_and_tomer_oz
+node('docker') {
+    stage('Checkout') {
+    checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/lordagam/react-java0mysql.git']])
+    }
+    stage('Docker Compose') {
+    sh "docker compose up -d"
+    }
+    stage('Test') {
+    sh "sleep 20"
+    sh "curl 192.168.1.128:3000"
+    sh "cd /root/jenkins/workspace/pipeline-tomer-jo"
+    }
+    stage('Push to DockerHub') {
+        withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'pass', usernameVariable: 'user')]) {
+     sh "docker login -u $user -p $pass"
+     sh "docker tag pipeline-tomer-jo-frontend lordagam/project_jo_tomer:frontend"
+     sh "docker tag pipeline-tomer-jo-backend lordagam/project_jo_tomer:backend"
+     sh "docker tag mariadb:10.6.4-focal lordagam/project_jo_tomer:mariadb"
+     sh "docker push lordagam/project_jo_tomer:frontend"
+     sh "sleep 30"
+     sh "docker push lordagam/project_jo_tomer:backend"
+     sh "sleep 30"
+     sh "docker push lordagam/project_jo_tomer:mariadb"
+     sh "sleep 30"
+     sh "docker compose down"
+            }
+
+    }
+}

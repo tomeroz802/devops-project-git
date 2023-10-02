@@ -1,0 +1,21 @@
+//for use downlaod git on sentos
+node('docker') {
+    stage('Checkout') {
+    checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/lordagam/react-java0mysql.git']])
+    }
+    stage('Docker Compose') {
+    sh "docker compose up ."
+    }
+    stage('Test') {
+    sh "sleep 4"
+    sh "curl localhost:3000"
+    sh "docker compose down"
+    }
+    stage('Push to DockerHub') {
+        withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'pass', usernameVariable: 'user')]) {
+     sh "docker login -u $user -p $pass"
+    sh "docker push tomeroz802/project_yossi_tomer"
+            }
+
+    }
+}
